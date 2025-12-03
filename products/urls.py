@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin-panel/servicios/<int:servicio_id>/editar/', views.admin_servicio_editar, name='admin_servicio_editar'),
     path('admin-panel/servicios/<int:servicio_id>/eliminar/', views.admin_servicio_eliminar, name='admin_servicio_eliminar'),
     path('admin-panel/foto-bienvenida/', views.admin_foto_bienvenida, name='admin_foto_bienvenida'),
+    path('admin-panel/configuracion/', views.admin_configuracion, name='admin_configuracion'),
     path('admin-panel/pedidos/', views.admin_pedidos, name='admin_pedidos'),
     path('admin-panel/pedidos/<int:order_id>/actualizar/', views.admin_pedido_actualizar, name='admin_pedido_actualizar'),
 ]

@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 from .models import CartItem, Order, OrderItem
-from products.models import Product
+from products.models import Product, ConfiguracionSitio
 
 
 @login_required
@@ -92,11 +92,15 @@ def send_whatsapp(request):
         item.product.save()
         productos_lista.append(f"{item.product.nombre} (x{item.quantity})")
     
+    # Obtener número de WhatsApp desde la configuración del sitio
+    configuracion = ConfiguracionSitio.load()
+    numero_whatsapp = configuracion.numero_pedidos.replace('+', '').replace(' ', '').replace('-', '')
+    
     # Mensaje de WhatsApp
     mensaje = "hola, quiero concretar la compra de estos productos: " + ", ".join(productos_lista)
     mensaje_encoded = mensaje.replace(" ", "%20").replace(",", "%2C")
     
-    whatsapp_url = f"https://wa.me/{settings.WHATSAPP_NUMBER.replace('+', '').replace(' ', '')}?text={mensaje_encoded}"
+    whatsapp_url = f"https://wa.me/{numero_whatsapp}?text={mensaje_encoded}"
     
     # Limpiar carrito
     cart_items.delete()

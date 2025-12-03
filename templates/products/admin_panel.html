@@ -62,7 +62,6 @@
     </div>
     
     <div class="row g-4 mt-2">
-        <div class="col-md-4"></div>
         <div class="col-md-4">
             <div class="card h-100 shadow">
                 <div class="card-body text-center">
@@ -75,6 +74,20 @@
                 </div>
             </div>
         </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-cogs text-secondary" style="font-size: 3rem;"></i>
+                    <h3 class="card-title mt-3">Configuración</h3>
+                    <p class="card-text">Configura aspectos generales del sitio: nombre del navegador, favicon, footer, redes sociales y número de pedidos.</p>
+                    <a href="{% url 'admin_configuracion' %}" class="btn btn-secondary">
+                        <i class="fas fa-edit"></i> Configurar Sitio
+                    </a>
+                </div>
+            </div>
+        </div>
+        
         <div class="col-md-4"></div>
     </div>
     

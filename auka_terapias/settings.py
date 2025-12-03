@@ -16,9 +16,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-change-this-in-production-1234567890'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+# Para desarrollo local, permite localhost y 127.0.0.1
+# En producción, reemplaza con tu dominio real, ej: ['tudominio.com', 'www.tudominio.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+# Configuración para mostrar páginas de error personalizadas incluso en desarrollo
+# Nota: En producción (DEBUG=False), esto no es necesario
 
 
 # Application definition
@@ -59,6 +64,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'cart.context_processors.cart',
+                'products.context_processors.configuracion_sitio',
             ],
         },
     },

@@ -53,8 +53,15 @@
                             <div class="col-md-6 mb-3">
                                 <label for="orden" class="form-label">Orden de Visualización</label>
                                 <input type="number" class="form-control" id="orden" name="orden" 
-                                       min="0" value="{% if servicio %}{{ servicio.orden }}{% else %}0{% endif %}">
-                                <small class="text-muted">Menor número aparece primero</small>
+                                       min="1" value="{% if servicio %}{{ servicio.orden }}{% else %}{% endif %}" 
+                                       placeholder="{% if not servicio %}Se asignará automáticamente{% endif %}">
+                                <small class="text-muted">
+                                    {% if servicio %}
+                                        Número de orden (1, 2, 3...). Si el orden ya existe, se reorganizará automáticamente.
+                                    {% else %}
+                                        Opcional: número de orden (1, 2, 3...). Si no se especifica, se asignará automáticamente.
+                                    {% endif %}
+                                </small>
                             </div>
                         </div>
                         

@@ -189,3 +189,62 @@ class FotoBienvenida(models.Model):
         obj, created = cls.objects.get_or_create(pk=1)
         return obj
 
+
+class ConfiguracionSitio(models.Model):
+    """Modelo para almacenar las configuraciones generales del sitio"""
+    nombre_navbar = models.CharField(
+        max_length=100,
+        default="AUKA",
+        help_text="Nombre que aparece en la barra superior (navbar) junto al icono"
+    )
+    nombre_navegador = models.CharField(
+        max_length=200, 
+        default="Auka Terapias - Productos Naturales",
+        help_text="Título que aparece en la pestaña del navegador"
+    )
+    favicon = models.ImageField(
+        upload_to='configuracion/', 
+        blank=True, 
+        null=True, 
+        help_text="Icono que aparece junto al nombre en la barra superior (navbar) (recomendado: 32x32 píxeles)"
+    )
+    texto_footer = models.TextField(
+        default="Auka Terapias - Productos medicinales y cosméticos 100% naturales, cultivados con amor y dedicación para cuidar tu bienestar.",
+        help_text="Texto que aparece en el footer del sitio"
+    )
+    url_instagram = models.URLField(
+        blank=True, 
+        null=True, 
+        default="https://www.instagram.com/auka_terapias/?hl=es",
+        help_text="URL de Instagram para el footer"
+    )
+    url_whatsapp_footer = models.URLField(
+        blank=True, 
+        null=True, 
+        default="https://wa.me/56985661992",
+        help_text="URL de WhatsApp para el footer (formato: https://wa.me/56985661992)"
+    )
+    numero_pedidos = models.CharField(
+        max_length=20,
+        default="+56985661992",
+        help_text="Número de WhatsApp para recibir pedidos (formato: +56985661992)"
+    )
+    updated = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Configuración del Sitio'
+        verbose_name_plural = 'Configuración del Sitio'
+    
+    def __str__(self):
+        return "Configuración del Sitio"
+    
+    def save(self, *args, **kwargs):
+        # Solo permitir una instancia
+        self.pk = 1
+        super().save(*args, **kwargs)
+    
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+

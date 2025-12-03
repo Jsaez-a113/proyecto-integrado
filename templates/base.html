@@ -149,8 +149,13 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="fas fa-leaf"></i>
-                AUKA
+                {% if configuracion_sitio.favicon %}
+                    <img src="{{ configuracion_sitio.favicon.url }}" alt="{{ configuracion_sitio.nombre_navbar }}" 
+                         style="width: 32px; height: 32px; margin-right: 10px; object-fit: contain;">
+                {% else %}
+                    <i class="fas fa-leaf"></i>
+                {% endif %}
+                {{ configuracion_sitio.nombre_navbar }}
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -237,17 +242,20 @@
             <div class="row">
                 <div class="col-md-6">
                     <p class="mb-0">
-                        <strong>Auka Terapias</strong> - Productos medicinales y cosméticos 100% naturales, 
-                        cultivados con amor y dedicación para cuidar tu bienestar.
+                        {{ configuracion_sitio.texto_footer|safe }}
                     </p>
                 </div>
                 <div class="col-md-6 text-end">
-                    <a href="https://www.instagram.com/auka_terapias/?hl=es" target="_blank" title="Instagram">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                    <a href="https://wa.me/56985661992" target="_blank" title="WhatsApp">
-                        <i class="fab fa-whatsapp"></i>
-                    </a>
+                    {% if configuracion_sitio.url_instagram %}
+                        <a href="{{ configuracion_sitio.url_instagram }}" target="_blank" title="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    {% endif %}
+                    {% if configuracion_sitio.url_whatsapp_footer %}
+                        <a href="{{ configuracion_sitio.url_whatsapp_footer }}" target="_blank" title="WhatsApp">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -3,7 +3,8 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
-from .models import Product, Review, ContenidoQuienesSomos, ContenidoServiciosTerapeuticos, FotoBienvenida, ServicioTerapeutico
+from django.db.models import Max
+from .models import Product, Review, ContenidoQuienesSomos, ContenidoServiciosTerapeuticos, FotoBienvenida, ServicioTerapeutico, ConfiguracionSitio
 from datetime import datetime
 import json
 
@@ -334,7 +335,7 @@ def admin_servicio_editar(request, servicio_id=None):
         descripcion = request.POST.get('descripcion')
         icono = request.POST.get('icono', 'fas fa-spa')
         color_icono = request.POST.get('color_icono', '#667eea')
-        orden = request.POST.get('orden', 0)
+        orden_input = request.POST.get('orden', '')
         activo = request.POST.get('activo') == 'on'
         
         # Manejar items (lista de características)
@@ -344,25 +345,61 @@ def admin_servicio_editar(request, servicio_id=None):
             items_lista = [item.strip() for item in items_texto.split('\n') if item.strip()]
         
         if servicio:
+            # Al editar, permitir cambiar el orden
+            orden_deseado = int(orden_input) if orden_input and orden_input.isdigit() else servicio.orden
+            orden_deseado = max(1, orden_deseado)  # Asegurar que sea al menos 1
+            
+            # Si el orden deseado ya está ocupado por otro servicio, reorganizar
+            servicio_con_orden = ServicioTerapeutico.objects.filter(orden=orden_deseado).exclude(id=servicio.id).first()
+            if servicio_con_orden:
+                # Intercambiar órdenes: el servicio que tenía ese orden toma el orden del servicio actual
+                orden_anterior = servicio.orden
+                servicio_con_orden.orden = orden_anterior
+                servicio_con_orden.save(update_fields=['orden'])
+            
             servicio.titulo = titulo
             servicio.descripcion = descripcion
             servicio.icono = icono
             servicio.color_icono = color_icono
-            servicio.orden = int(orden) if orden else 0
+            servicio.orden = orden_deseado
             servicio.activo = activo
             servicio.items = items_lista
         else:
+            # Al crear, asignar el orden especificado o el siguiente disponible
+            if orden_input and orden_input.isdigit():
+                orden_deseado = max(1, int(orden_input))
+                # Si el orden ya está ocupado, reorganizar
+                servicio_con_orden = ServicioTerapeutico.objects.filter(orden=orden_deseado).first()
+                if servicio_con_orden:
+                    # Mover el servicio existente al siguiente orden disponible
+                    max_orden = ServicioTerapeutico.objects.aggregate(Max('orden'))['orden__max']
+                    nuevo_orden_existente = (max_orden + 1) if max_orden is not None else 1
+                    servicio_con_orden.orden = nuevo_orden_existente
+                    servicio_con_orden.save(update_fields=['orden'])
+            else:
+                # Si no se especifica orden, usar el siguiente disponible
+                max_orden = ServicioTerapeutico.objects.aggregate(Max('orden'))['orden__max']
+                orden_deseado = (max_orden + 1) if max_orden is not None else 1
+            
             servicio = ServicioTerapeutico(
                 titulo=titulo,
                 descripcion=descripcion,
                 icono=icono,
                 color_icono=color_icono,
-                orden=int(orden) if orden else 0,
+                orden=orden_deseado,
                 activo=activo,
                 items=items_lista
             )
         
         servicio.save()
+        
+        # Reorganizar órdenes para asegurar que sean consecutivos desde 1 (sin gaps)
+        servicios = ServicioTerapeutico.objects.all().order_by('orden', 'created')
+        for index, serv in enumerate(servicios, start=1):
+            if serv.orden != index:
+                serv.orden = index
+                serv.save(update_fields=['orden'])
+        
         messages.success(request, f'Servicio {"actualizado" if servicio_id else "creado"} exitosamente.')
         return redirect('admin_servicios_lista')
     
@@ -383,6 +420,14 @@ def admin_servicio_eliminar(request, servicio_id):
     if request.method == 'POST':
         titulo = servicio.titulo
         servicio.delete()
+        
+        # Reorganizar órdenes después de eliminar
+        servicios = ServicioTerapeutico.objects.all().order_by('orden', 'created')
+        for index, serv in enumerate(servicios, start=1):
+            if serv.orden != index:
+                serv.orden = index
+                serv.save(update_fields=['orden'])
+        
         messages.success(request, f'Servicio "{titulo}" eliminado exitosamente.')
         return redirect('admin_servicios_lista')
     context = {
@@ -467,4 +512,64 @@ def admin_pedido_actualizar(request, order_id):
         return redirect('admin_pedidos')
     
     return redirect('admin_pedidos')
+
+
+@staff_member_required
+def admin_configuracion(request):
+    """Vista para editar la configuración general del sitio"""
+    import os
+    from django.conf import settings
+    
+    configuracion = ConfiguracionSitio.load()
+    
+    if request.method == 'POST':
+        configuracion.nombre_navbar = request.POST.get('nombre_navbar', 'AUKA')
+        configuracion.texto_footer = request.POST.get('texto_footer', '')
+        configuracion.url_instagram = request.POST.get('url_instagram', '')
+        configuracion.url_whatsapp_footer = request.POST.get('url_whatsapp_footer', '')
+        configuracion.numero_pedidos = request.POST.get('numero_pedidos', '+56985661992')
+        
+        # Manejar favicon - eliminar el anterior si existe
+        if 'favicon' in request.FILES:
+            # Eliminar el archivo anterior si existe
+            if configuracion.favicon:
+                old_favicon_path = configuracion.favicon.path
+                if os.path.isfile(old_favicon_path):
+                    try:
+                        os.remove(old_favicon_path)
+                    except Exception:
+                        pass  # Si hay error al eliminar, continuar de todas formas
+            configuracion.favicon = request.FILES['favicon']
+        
+        configuracion.save()
+        messages.success(request, 'Configuración del sitio actualizada exitosamente.')
+        return redirect('admin_configuracion')
+    
+    context = {
+        'configuracion': configuracion,
+    }
+    return render(request, 'products/admin_configuracion.html', context)
+
+
+# ============ VISTAS DE ERROR PERSONALIZADAS ============
+
+def custom_404(request, exception=None):
+    """Vista personalizada para error 404"""
+    # Acepta exception como opcional para funcionar tanto como handler como vista normal
+    return render(request, '404.html', status=404)
+
+
+def custom_500(request):
+    """Vista personalizada para error 500"""
+    return render(request, '500.html', status=500)
+
+
+def custom_403(request, exception):
+    """Vista personalizada para error 403"""
+    return render(request, '403.html', status=403)
+
+
+def custom_400(request, exception):
+    """Vista personalizada para error 400"""
+    return render(request, '400.html', status=400)
 
