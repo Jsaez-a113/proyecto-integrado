@@ -22,17 +22,13 @@ wheels/
 
 # Django
 *.log
-local_settings.py
 db.sqlite3
 db.sqlite3-journal
-/staticfiles/
-/media/
-
-# Virtual Environment
-venv/
-ENV/
-env/
-.venv
+media/
+staticfiles/
+.env
+.env.local
+.env.production
 
 # IDE
 .vscode/
@@ -45,7 +41,16 @@ env/
 .DS_Store
 Thumbs.db
 
+# Vercel
+.vercel
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
 # Environment variables
 .env
 .env.local
-
