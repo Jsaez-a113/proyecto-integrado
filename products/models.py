@@ -109,6 +109,18 @@ class ContenidoQuienesSomos(models.Model):
     def save(self, *args, **kwargs):
         # Solo permitir una instancia
         self.pk = 1
+        
+        # Si ya existe una instancia, eliminar la imagen anterior
+        try:
+            old_instance = ContenidoQuienesSomos.objects.get(pk=1)
+            # Si hay una nueva imagen y es diferente a la anterior, eliminar la anterior
+            if old_instance.imagen_archivo and self.imagen_archivo and old_instance.imagen_archivo != self.imagen_archivo:
+                # Eliminar el archivo físico del sistema
+                if old_instance.imagen_archivo.name:
+                    old_instance.imagen_archivo.delete(save=False)
+        except ContenidoQuienesSomos.DoesNotExist:
+            pass
+        
         super().save(*args, **kwargs)
     
     @classmethod
@@ -182,6 +194,18 @@ class FotoBienvenida(models.Model):
     def save(self, *args, **kwargs):
         # Solo permitir una instancia
         self.pk = 1
+        
+        # Si ya existe una instancia, eliminar la imagen anterior
+        try:
+            old_instance = FotoBienvenida.objects.get(pk=1)
+            # Si hay una nueva imagen y es diferente a la anterior, eliminar la anterior
+            if old_instance.imagen_archivo and self.imagen_archivo and old_instance.imagen_archivo != self.imagen_archivo:
+                # Eliminar el archivo físico del sistema
+                if old_instance.imagen_archivo.name:
+                    old_instance.imagen_archivo.delete(save=False)
+        except FotoBienvenida.DoesNotExist:
+            pass
+        
         super().save(*args, **kwargs)
     
     @classmethod
@@ -195,6 +219,8 @@ class ConfiguracionSitio(models.Model):
     nombre_navbar = models.CharField(
         max_length=100,
         default="AUKA",
+        blank=True,
+        null=True,
         help_text="Nombre que aparece en la barra superior (navbar) junto al icono"
     )
     nombre_navegador = models.CharField(
@@ -241,6 +267,18 @@ class ConfiguracionSitio(models.Model):
     def save(self, *args, **kwargs):
         # Solo permitir una instancia
         self.pk = 1
+        
+        # Si ya existe una instancia, eliminar el favicon anterior
+        try:
+            old_instance = ConfiguracionSitio.objects.get(pk=1)
+            # Si hay un nuevo favicon y es diferente al anterior, eliminar el anterior
+            if old_instance.favicon and self.favicon and old_instance.favicon != self.favicon:
+                # Eliminar el archivo físico del sistema
+                if old_instance.favicon.name:
+                    old_instance.favicon.delete(save=False)
+        except ConfiguracionSitio.DoesNotExist:
+            pass
+        
         super().save(*args, **kwargs)
     
     @classmethod

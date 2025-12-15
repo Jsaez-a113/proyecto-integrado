@@ -20,9 +20,18 @@ handler500 = products_views.custom_500
 handler403 = products_views.custom_403
 handler400 = products_views.custom_400
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    # Catch-all al final para capturar URLs no encontradas en desarrollo
-    # Esto permite mostrar la página 404 personalizada incluso con DEBUG=True
-    urlpatterns.append(path('<path:path>', products_views.custom_404))
+# Servir archivos media y static SIEMPRE (incluso con DEBUG=False)
+# En producción real, usa nginx/apache en su lugar
+from django.views.static import serve
+from django.urls import re_path
+
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+]
+
+# Catch-all al final para capturar URLs no encontradas
+# NOTA: Comentado porque interfiere con el servicio de archivos media
+# Si necesitas páginas 404 personalizadas, usa handler404 arriba
+# urlpatterns.append(path('<path:path>', products_views.custom_404))
 
