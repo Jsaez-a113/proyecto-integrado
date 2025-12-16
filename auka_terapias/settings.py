@@ -22,7 +22,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Para desarrollo local, permite localhost y 127.0.0.1
 # En producción, reemplaza con tu dominio real, ej: ['tudominio.com', 'www.tudominio.com']
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.vercel.app', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.railway.app', cast=Csv())
 
 # Configuración para mostrar páginas de error personalizadas incluso en desarrollo
 # Nota: En producción (DEBUG=False), esto no es necesario
